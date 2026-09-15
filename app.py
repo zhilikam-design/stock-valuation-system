@@ -876,9 +876,61 @@ if current_ticker:
                     st.markdown("---")
                     st.subheader(T["ws_header"])
                     ws1, ws2, ws3 = st.columns(3)
-                    ws1.metric(T["ws_mean"], f"${target_mean:.2f}", f"{num_analysts} Analysts")
-                    ws2.metric(T["ws_range"], f"${target_low:.2f} ~ ${target_high:.2f}")
-                    ws3.metric(T["ws_rating"], rating)
+
+                    t_low = target_low if target_low else (target_mean * 0.85)
+                    t_high = target_high if target_high else (target_mean * 1.25)
+
+                    card_box_style = (
+                        "background: #1e293b; "
+                        "border: 1px solid #334155; "
+                        "border-radius: 10px; "
+                        "padding: 16px 14px; "
+                        "text-align: center; "
+                        "min-height: 110px; "
+                        "display: flex; "
+                        "flex-direction: column; "
+                        "justify-content: center; "
+                        "box-shadow: 0 4px 6px -1px rgba(0,0,0,0.15);"
+                    )
+                    lbl_style = "color: #94a3b8; font-size: 13px; font-weight: 500; margin-bottom: 6px;"
+                    val_style = "color: #ffffff !important; font-size: 22px; font-weight: 700; margin: 4px 0; letter-spacing: -0.3px; white-space: nowrap;"
+                    sub_style = "color: #38bdf8; font-size: 12px; font-weight: 500;"
+
+                    with ws1:
+                        st.markdown(
+                            f"""
+                            <div style="{card_box_style}">
+                                <div style="{lbl_style}">{T['ws_mean']}</div>
+                                <div style="{val_style}">${target_mean:.2f}</div>
+                                <div style="{sub_style}">👥 {num_analysts} {"位分析师" if lang_key == "zh" else "Analysts"}</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+                    with ws2:
+                        st.markdown(
+                            f"""
+                            <div style="{card_box_style}">
+                                <div style="{lbl_style}">{T['ws_range']}</div>
+                                <div style="{val_style}">${t_low:.2f} ~ ${t_high:.2f}</div>
+                                <div style="color: #cbd5e1; font-size: 12px; font-weight: 500;">{"最低" if lang_key == "zh" else "Low"} ${t_low:.2f} | {"最高" if lang_key == "zh" else "High"} ${t_high:.2f}</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+                    with ws3:
+                        st.markdown(
+                            f"""
+                            <div style="{card_box_style}">
+                                <div style="{lbl_style}">{T['ws_rating']}</div>
+                                <div style="{val_style}">{rating}</div>
+                                <div style="color: #4ade80; font-size: 12px; font-weight: 500;">🏛️ {"投行机构共识" if lang_key == "zh" else "Consensus View"}</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
 
                     if primary_val and abs((primary_val - target_mean) / target_mean) <= 0.15:
                         st.success(T["ws_match"])
