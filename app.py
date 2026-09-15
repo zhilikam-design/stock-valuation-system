@@ -34,6 +34,8 @@ TEXTS = {
         "custom_help": "马股请加 .KL (如: 1155.KL)；美股直接输入代码 (如: AAPL, NVDA)",
         "custom_placeholder": "例如: 1155.KL 或 AAPL",
         "quick_tag": "🔥 热门快捷测评：",
+        "active_stock_label": "当前正在测评股票",
+        "btn_analyze": "开始测算",
         
         # 核心参数
         "param_header": "⚙️ 步骤 2：估值核心参数设定 (可保持默认)",
@@ -110,6 +112,8 @@ TEXTS = {
         "custom_help": "For Malaysian stocks add .KL (e.g., 1155.KL); for US stocks enter ticker (e.g., AAPL, NVDA)",
         "custom_placeholder": "e.g., 1155.KL or AAPL",
         "quick_tag": "🔥 Quick Suggestions:",
+        "active_stock_label": "Currently Evaluating Stock",
+        "btn_analyze": "Analyze",
         
         # Parameters
         "param_header": "⚙️ Step 2: Core Valuation Assumptions (Defaults Recommended)",
@@ -191,7 +195,7 @@ with col_title:
 st.markdown("---")
 
 # ==============================================================================
-# 4. 股票选择器与搜索 (单选切换，彻底杜绝 Tab 状态混乱导致美股无法读取的 Bug)
+# 4. 股票选择器与搜索 (状态机驱动，彻底杜绝数据覆盖与美股无法切换的 Bug)
 # ==============================================================================
 st.subheader(T["market_label"])
 
@@ -217,69 +221,139 @@ US_STOCKS = [
     ("JPM", "JPMorgan Chase (摩根大通 - 华尔街银行巨头)")
 ]
 
-if "current_ticker" not in st.session_state:
-    st.session_state["current_ticker"] = "1155.KL"
+my_opts = [f"{t} | {name}" for t, name in MY_STOCKS]
+us_opts = [f"{t} | {name}" for t, name in US_STOCKS]
 
-market_choice = st.radio(
-    "市场类别：",
-    options=[T["market_my"], T["market_us"], T["market_custom"]],
-    horizontal=True,
-    label_visibility="collapsed"
-)
+# 状态初始化
+if "active_ticker" not in st.session_state:
+    st.session_state["active_ticker"] = "1155.KL"
+if "active_market" not in st.session_state:
+    st.session_state["active_market"] = "MY"
+if "radio_market_key" not in st.session_state:
+    st.session_state["radio_market_key"] = "MY"
 
-if market_choice == T["market_my"]:
-    my_opts = [f"{t} | {name}" for t, name in MY_STOCKS]
-    default_idx = 0
-    for idx, (t, _) in enumerate(MY_STOCKS):
-        if t == st.session_state["current_ticker"]:
-            default_idx = idx
-            break
-    sel_my = st.selectbox(T["choose_stock"], options=my_opts, index=default_idx)
-    st.session_state["current_ticker"] = sel_my.split(" | ")[0].strip()
+# 快捷选择按钮的回调
+def select_stock_quick(ticker, market):
+    st.session_state["active_ticker"] = ticker
+    st.session_state["active_market"] = market
+    st.session_state["radio_market_key"] = market
+    if market == "US":
+        for opt in us_opts:
+            if opt.startswith(ticker):
+                st.session_state["us_dropdown_widget"] = opt
+                break
+    elif market == "MY":
+        for opt in my_opts:
+            if opt.startswith(ticker):
+                st.session_state["my_dropdown_widget"] = opt
+                break
 
-elif market_choice == T["market_us"]:
-    us_opts = [f"{t} | {name}" for t, name in US_STOCKS]
-    default_idx = 0
-    for idx, (t, _) in enumerate(US_STOCKS):
-        if t == st.session_state["current_ticker"]:
-            default_idx = idx
-            break
-    sel_us = st.selectbox(T["choose_stock"], options=us_opts, index=default_idx)
-    st.session_state["current_ticker"] = sel_us.split(" | ")[0].strip()
-
-else:
-    custom_val = st.text_input(
-        T["custom_label"],
-        value=st.session_state["current_ticker"] if st.session_state["current_ticker"] not in [t for t, _ in MY_STOCKS + US_STOCKS] else "",
-        placeholder=T["custom_placeholder"],
-        help=T["custom_help"]
-    ).strip().upper()
-    if custom_val:
-        st.session_state["current_ticker"] = custom_val
-
-# 快捷一键切换按钮排
+# 渲染热门快捷按钮
 st.write(T["quick_tag"])
 q_cols = st.columns(6)
-if q_cols[0].button("1155.KL (Maybank)", use_container_width=True):
-    st.session_state["current_ticker"] = "1155.KL"
-    st.rerun()
-if q_cols[1].button("0166.KL (Inari 科技)", use_container_width=True):
-    st.session_state["current_ticker"] = "0166.KL"
-    st.rerun()
-if q_cols[2].button("5347.KL (Tenaga 能源)", use_container_width=True):
-    st.session_state["current_ticker"] = "5347.KL"
-    st.rerun()
-if q_cols[3].button("AAPL (苹果)", use_container_width=True):
-    st.session_state["current_ticker"] = "AAPL"
-    st.rerun()
-if q_cols[4].button("NVDA (英伟达)", use_container_width=True):
-    st.session_state["current_ticker"] = "NVDA"
-    st.rerun()
-if q_cols[5].button("TSLA (特斯拉)", use_container_width=True):
-    st.session_state["current_ticker"] = "TSLA"
-    st.rerun()
+q_cols[0].button("🇲🇾 1155.KL (Maybank)", use_container_width=True, on_click=select_stock_quick, args=("1155.KL", "MY"))
+q_cols[1].button("🇲🇾 0166.KL (Inari)", use_container_width=True, on_click=select_stock_quick, args=("0166.KL", "MY"))
+q_cols[2].button("🇲🇾 5347.KL (Tenaga)", use_container_width=True, on_click=select_stock_quick, args=("5347.KL", "MY"))
+q_cols[3].button("🇺🇸 AAPL (苹果)", use_container_width=True, on_click=select_stock_quick, args=("AAPL", "US"))
+q_cols[4].button("🇺🇸 NVDA (英伟达)", use_container_width=True, on_click=select_stock_quick, args=("NVDA", "US"))
+q_cols[5].button("🇺🇸 TSLA (特斯拉)", use_container_width=True, on_click=select_stock_quick, args=("TSLA", "US"))
 
-current_ticker = st.session_state["current_ticker"]
+st.markdown("")
+
+# 市场模式单选 (采用稳定内部代号 "MY", "US", "CUSTOM"，彻底免疫中英文切换导致的重置)
+market_labels = {
+    "MY": T["market_my"],
+    "US": T["market_us"],
+    "CUSTOM": T["market_custom"]
+}
+
+def on_market_radio_change():
+    chosen_market = st.session_state["radio_market_key"]
+    st.session_state["active_market"] = chosen_market
+    if chosen_market == "MY" and not st.session_state["active_ticker"].endswith(".KL"):
+        st.session_state["active_ticker"] = "1155.KL"
+        st.session_state["my_dropdown_widget"] = my_opts[0]
+    elif chosen_market == "US" and st.session_state["active_ticker"].endswith(".KL"):
+        st.session_state["active_ticker"] = "AAPL"
+        st.session_state["us_dropdown_widget"] = us_opts[0]
+
+st.radio(
+    "市场类别：",
+    options=["MY", "US", "CUSTOM"],
+    format_func=lambda k: market_labels[k],
+    horizontal=True,
+    label_visibility="collapsed",
+    key="radio_market_key",
+    on_change=on_market_radio_change
+)
+
+current_market = st.session_state.get("active_market", "MY")
+
+if current_market == "MY":
+    def on_my_dropdown_change():
+        chosen_str = st.session_state["my_dropdown_widget"]
+        st.session_state["active_ticker"] = chosen_str.split(" | ")[0].strip()
+
+    my_keys = [t for t, _ in MY_STOCKS]
+    default_my_idx = my_keys.index(st.session_state["active_ticker"]) if st.session_state["active_ticker"] in my_keys else 0
+    if "my_dropdown_widget" not in st.session_state or not any(st.session_state["my_dropdown_widget"].startswith(t) for t in my_keys):
+        st.session_state["my_dropdown_widget"] = my_opts[default_my_idx]
+
+    sel_my = st.selectbox(
+        T["choose_stock"],
+        options=my_opts,
+        key="my_dropdown_widget",
+        on_change=on_my_dropdown_change
+    )
+    st.session_state["active_ticker"] = sel_my.split(" | ")[0].strip()
+
+elif current_market == "US":
+    def on_us_dropdown_change():
+        chosen_str = st.session_state["us_dropdown_widget"]
+        st.session_state["active_ticker"] = chosen_str.split(" | ")[0].strip()
+
+    us_keys = [t for t, _ in US_STOCKS]
+    default_us_idx = us_keys.index(st.session_state["active_ticker"]) if st.session_state["active_ticker"] in us_keys else 0
+    if "us_dropdown_widget" not in st.session_state or not any(st.session_state["us_dropdown_widget"].startswith(t) for t in us_keys):
+        st.session_state["us_dropdown_widget"] = us_opts[default_us_idx]
+
+    sel_us = st.selectbox(
+        T["choose_stock"],
+        options=us_opts,
+        key="us_dropdown_widget",
+        on_change=on_us_dropdown_change
+    )
+    st.session_state["active_ticker"] = sel_us.split(" | ")[0].strip()
+
+else:
+    def on_custom_submit():
+        val = st.session_state["custom_input_field"].strip().upper()
+        if val:
+            st.session_state["active_ticker"] = val
+
+    custom_code_col, custom_btn_col = st.columns([4, 1])
+    with custom_code_col:
+        st.text_input(
+            T["custom_label"],
+            value=st.session_state["active_ticker"] if (not st.session_state["active_ticker"].endswith(".KL") and st.session_state["active_ticker"] not in [t for t, _ in US_STOCKS]) else "",
+            placeholder=T["custom_placeholder"],
+            help=T["custom_help"],
+            key="custom_input_field",
+            on_change=on_custom_submit
+        )
+    with custom_btn_col:
+        st.write("")
+        st.write("")
+        if st.button(T["btn_analyze"] + " 🔎", use_container_width=True):
+            on_custom_submit()
+            st.rerun()
+
+current_ticker = st.session_state["active_ticker"]
+is_my = current_ticker.endswith(".KL")
+
+market_tag = ("🇲🇾 马来西亚股市 (Bursa)" if lang_key == "zh" else "🇲🇾 Bursa Malaysia") if is_my else ("🇺🇸 美国股市 (US Equities)" if lang_key == "zh" else "🇺🇸 US Equities")
+
+st.info(f"🎯 **{T['active_stock_label']}**: `{current_ticker}` | **{market_tag}**")
 
 st.markdown("---")
 
