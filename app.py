@@ -23,37 +23,46 @@ st.set_page_config(
 TEXTS = {
     "zh": {
         "title": "💡 智能股票公道价估值器",
-        "subtitle": "小白也能看懂的股票内在价值测算工具 | 支持马来西亚股市 (Bursa) 与美股 (US Equities)",
+        "subtitle": "小白也能看懂的多维度股票公允价值测算平台 | 支持马来西亚股市 (Bursa) 与美股 (US Equities)",
         "lang_select": "语言 / Language",
-        "search_header": "🔍 1. 选择或搜索股票",
-        "preset_tab_my": "🇲🇾 马来西亚热门股票 (Bursa Malaysia)",
-        "preset_tab_us": "🇺🇸 美国热门股票 (US Equities)",
-        "preset_tab_custom": "✏️ 手动输入股票代码",
+        "market_label": "📌 步骤 1：选择市场或输入股票代码",
+        "market_my": "🇲🇾 马来西亚股市 (Bursa Malaysia)",
+        "market_us": "🇺🇸 美国股市 (US Equities)",
+        "market_custom": "🔍 手动输入代码 (Custom Ticker)",
         "choose_stock": "从列表中快速挑选股票：",
-        "custom_label": "输入股票代码 (Stock Ticker)：",
-        "custom_help": "马股请在编号后加 .KL (例如: 1155.KL)；美股直接输入代码 (例如: AAPL)",
+        "custom_label": "输入股票代码：",
+        "custom_help": "马股请加 .KL (如: 1155.KL)；美股直接输入代码 (如: AAPL, NVDA)",
         "custom_placeholder": "例如: 1155.KL 或 AAPL",
-        "btn_analyze": "开始智能估值",
+        "quick_tag": "🔥 热门快捷测评：",
         
         # 核心参数
-        "param_header": "⚙️ 2. 估值核心参数设定 (可保持默认)",
-        "param_terminal_g": "长期通胀/永续增长率 (Terminal Growth Rate)",
+        "param_header": "⚙️ 步骤 2：估值核心参数设定 (可保持默认)",
+        "param_terminal_g": "长期永续通胀增长率 (Terminal Growth Rate)",
         "param_terminal_g_help": "指公司成熟稳定后，永久跟随国家经济与通胀的微小增长率。小白保持 2.5% 即可！",
-        "param_erp": "股市投资风险溢价要求 (Equity Risk Premium)",
-        "param_erp_help": "投资股票相比于把钱存国债，你所期望获得的额外回报率补偿。通常在 5.0% ~ 6.0% 之间。",
+        "param_erp": "股市风险溢价要求 (Equity Risk Premium)",
+        "param_erp_help": "投资股票相比于国债所期望的额外回报补偿。通常为 5.5%。",
         
-        # 结果与诊断
-        "result_header": "📊 3. 股票公道价估值结论",
-        "curr_price": "当前市场买卖价",
-        "fair_price": "估算合理公道价",
-        "verdict_title": "投资诊断参考",
+        # 结果与三合一面板
+        "result_header": "📊 步骤 3：三大估值模型横向对比与综合结论",
+        "curr_price": "当前市场价格",
+        "fair_price_rec": "⭐ 系统最推荐公道价",
+        "verdict_title": "综合投资诊断",
         "verdict_under": "🟢 明显低估 (划算/打折中)",
         "verdict_over": "🔴 明显高估 (偏贵/溢价中)",
         "verdict_fair": "⚖️ 估值合理 (公道)",
-        "upside_prefix": "相比当前市价有",
-        "downside_prefix": "当前市价相比合理价高出",
-        "model_used_dcf": "采用【两阶段现金流贴现模型 (DCF)】：依据公司真实经营赚取现金的能力来测算。",
-        "model_used_ddm": "采用【股息分红折现模型 (DDM)】：金融/地产/公用事业专属，依据持续分红派息能力测算。",
+        "upside_prefix": "较当前市价有",
+        "downside_prefix": "较公道价溢价",
+        
+        # 三大模型卡片
+        "model_dcf_name": "两阶段现金流贴现 (DCF)",
+        "model_ddm_name": "股息分红贴现 (DDM)",
+        "model_pe_name": "市盈率倍数估值 (P/E)",
+        "badge_recommended": "⭐ 主要推荐",
+        "badge_reference": "📌 参考估值",
+        "no_data": "暂无有效数据",
+        "no_data_dcf": "现金流为负或数据不足",
+        "no_data_ddm": "该公司不派发股息",
+        "no_data_pe": "公司目前处于净亏损",
         
         # 小白速成词典
         "glossary_header": "📖 小白通俗金融词典：这些数据代表什么？",
@@ -63,14 +72,15 @@ TEXTS = {
         "card_growth_desc": "未来 5 年公司经营现金流预计每年递增的比例。增长越快，股票当前公道身价就越高。",
         "card_wacc_title": "🛡️ 投资及格线回报率 (WACC / 折现率)",
         "card_wacc_desc": "你买入这家公司所要求的最低年化回报门槛。风险越高、借钱越多的公司，及格线要求越高。",
-        "card_fair_title": "💎 内在价值 (Intrinsic Value)",
+        "card_fair_title": "💎 内在公允价值 (Fair Value)",
         "card_fair_desc": "剥离市场的短期情绪狂热与恐慌，根据公司真实资产、欠债与赚钱能力算出的'出厂公道价'。",
 
-        # 图表
-        "chart_header": "📈 4. 数据可视化图表展示",
+        # 动态图表
+        "chart_header": "📈 步骤 4：多周期走势图与量化特征图",
+        "timeframe_label": "切换股价走势周期：",
+        "chart_history_title": "股票价格动态走势图",
         "chart_beta_title": "Beta 收益率特征线散点分布图",
         "chart_beta_exp": "每个点代表过往某一周的收益率联动。红线斜率即为真实 Beta（马股对标 MSCI Malaysia ETF，美股对标 S&P 500）。",
-        "chart_history_title": "过去 5 年历史股价走势图",
         
         # 华尔街一致预期
         "ws_header": "🏛️ 华尔街专业投行分析师共识 (Wall Street View)",
@@ -89,37 +99,46 @@ TEXTS = {
     },
     "en": {
         "title": "💡 StockVal - Smart Fair Value Estimator",
-        "subtitle": "Beginner-Friendly Stock Valuation Platform | Supports Bursa Malaysia & US Equities",
+        "subtitle": "Beginner-Friendly Multi-Model Valuation Platform | Supports Bursa Malaysia & US Equities",
         "lang_select": "Language / 语言",
-        "search_header": "🔍 1. Select or Search Stock",
-        "preset_tab_my": "🇲🇾 Popular Bursa Malaysia",
-        "preset_tab_us": "🇺🇸 Popular US Equities",
-        "preset_tab_custom": "✏️ Enter Custom Ticker",
+        "market_label": "📌 Step 1: Select Market or Input Ticker",
+        "market_my": "🇲🇾 Bursa Malaysia",
+        "market_us": "🇺🇸 US Equities",
+        "market_custom": "🔍 Custom Ticker",
         "choose_stock": "Quick pick a popular stock from the list:",
         "custom_label": "Enter Stock Ticker Symbol:",
-        "custom_help": "For Malaysian stocks add .KL (e.g., 1155.KL); for US stocks enter ticker (e.g., AAPL)",
+        "custom_help": "For Malaysian stocks add .KL (e.g., 1155.KL); for US stocks enter ticker (e.g., AAPL, NVDA)",
         "custom_placeholder": "e.g., 1155.KL or AAPL",
-        "btn_analyze": "Calculate Valuation",
+        "quick_tag": "🔥 Quick Suggestions:",
         
         # Parameters
-        "param_header": "⚙️ 2. Core Valuation Assumptions (Defaults Recommended)",
+        "param_header": "⚙️ Step 2: Core Valuation Assumptions (Defaults Recommended)",
         "param_terminal_g": "Perpetual / Terminal Growth Rate (g)",
         "param_terminal_g_help": "The long-term perpetual growth rate once the company matures, roughly matching GDP & inflation. 2.5% is standard.",
         "param_erp": "Equity Risk Premium (ERP)",
-        "param_erp_help": "The extra return expected for taking stock risk above safe government bond yields. Typically 5.0% - 6.0%.",
+        "param_erp_help": "The extra return expected for taking stock risk above safe government bond yields. Typically 5.5%.",
         
-        # Results
-        "result_header": "📊 3. Fair Valuation Results & Verdict",
+        # Results & 3-Model Panel
+        "result_header": "📊 Step 3: Multi-Model Valuation Matrix & Final Verdict",
         "curr_price": "Current Market Price",
-        "fair_price": "Estimated Fair Value",
-        "verdict_title": "Investment Diagnostic",
+        "fair_price_rec": "⭐ System Recommended Fair Value",
+        "verdict_title": "Diagnostic Summary",
         "verdict_under": "🟢 UNDERVALUED (On Sale)",
         "verdict_over": "🔴 OVERVALUED (Expensive)",
         "verdict_fair": "⚖️ FAIRLY VALUED",
-        "upside_prefix": "Potential upside from current market price: ",
+        "upside_prefix": "Potential upside from market price: ",
         "downside_prefix": "Trading at a premium of: ",
-        "model_used_dcf": "Evaluated using Two-Stage Discounted Cash Flow (DCF): based on real operating cash generating power.",
-        "model_used_ddm": "Evaluated using Dividend Discount Model (DDM): customized for Financials/Utilities based on sustainable dividend yields.",
+        
+        # 3 Models
+        "model_dcf_name": "Two-Stage DCF Model",
+        "model_ddm_name": "Dividend Discount Model (DDM)",
+        "model_pe_name": "P/E Multiples Valuation",
+        "badge_recommended": "⭐ Recommended",
+        "badge_reference": "📌 Reference",
+        "no_data": "No Valid Data",
+        "no_data_dcf": "Negative or Missing Cash Flows",
+        "no_data_ddm": "Company pays no dividend",
+        "no_data_pe": "Company in net loss",
         
         # Glossary
         "glossary_header": "📖 Beginner's Financial Glossary: What do these numbers mean?",
@@ -132,11 +151,12 @@ TEXTS = {
         "card_fair_title": "💎 Intrinsic Fair Value",
         "card_fair_desc": "Stripping away short-term market hype and panic, this represents the company's authentic 'factory price' per share.",
 
-        # Charts
-        "chart_header": "📈 4. Visual Data & Charts",
+        # Dynamic Charts
+        "chart_header": "📈 Step 4: Multi-Timeframe Price Trend & Regression Analysis",
+        "timeframe_label": "Select Price Timeframe:",
+        "chart_history_title": "Interactive Stock Price Trend",
         "chart_beta_title": "Beta Characteristic Line & Scatter Plot",
         "chart_beta_exp": "Each point represents one week of historical returns. The slope of the red line is Beta (vs MSCI Malaysia ETF for Bursa, vs S&P 500 for US).",
-        "chart_history_title": "Past 5-Year Historical Stock Price",
         
         # Wall Street
         "ws_header": "🏛️ Wall Street Analyst Consensus (US Equities)",
@@ -171,12 +191,12 @@ with col_title:
 st.markdown("---")
 
 # ==============================================================================
-# 4. 股票选择器与搜索框 (在主页一目了然，附带马股与美股热门列表)
+# 4. 股票选择器与搜索 (单选切换，彻底杜绝 Tab 状态混乱导致美股无法读取的 Bug)
 # ==============================================================================
-st.subheader(T["search_header"])
+st.subheader(T["market_label"])
 
 MY_STOCKS = [
-    ("1155.KL", "Maybank (马来亚银行 - 金融龙头 / Dividend King)"),
+    ("1155.KL", "Maybank (马来亚银行 - 金融分红王)"),
     ("1295.KL", "Public Bank (大众银行 - 稳健金融巨头)"),
     ("5347.KL", "Tenaga Nasional (国家能源 - 公用事业基建)"),
     ("0166.KL", "Inari Amertron (益纳利 - 科技半导体芯片)"),
@@ -187,66 +207,81 @@ MY_STOCKS = [
 ]
 
 US_STOCKS = [
-    ("AAPL", "Apple (苹果公司 - 消费电子巨头)"),
-    ("NVDA", "NVIDIA (英伟达 - 全球 AI 算力龙头)"),
-    ("TSLA", "Tesla (特斯拉 - 电动车与人形机器人)"),
-    ("MSFT", "Microsoft (微软 - 云计算与企业软件)"),
-    ("GOOGL", "Alphabet (谷歌 - 全球搜索与 AI)"),
-    ("AMZN", "Amazon (亚马逊 - 电商与 AWS 云原生)")
+    ("AAPL", "Apple Inc. (苹果公司 - 消费电子与生态)"),
+    ("NVDA", "NVIDIA Corporation (英伟达 - 全球 AI 算力芯片)"),
+    ("TSLA", "Tesla Inc. (特斯拉 - 电动车与机器人)"),
+    ("MSFT", "Microsoft (微软 - 企业软件与云计算)"),
+    ("GOOGL", "Alphabet Inc. (谷歌 - 全球搜索与云原生)"),
+    ("AMZN", "Amazon.com (亚马逊 - 全球电商与 AWS)"),
+    ("META", "Meta Platforms (Meta - 社交网络与大模型)"),
+    ("JPM", "JPMorgan Chase (摩根大通 - 华尔街银行巨头)")
 ]
 
-search_tab_my, search_tab_us, search_tab_custom = st.tabs([
-    T["preset_tab_my"],
-    T["preset_tab_us"],
-    T["preset_tab_custom"]
-])
+# 初始化 session_state
+if "current_ticker" not in st.session_state:
+    st.session_state["current_ticker"] = "1155.KL"
 
-chosen_ticker = "1155.KL"
+market_choice = st.radio(
+    "市场类别：",
+    options=[T["market_my"], T["market_us"], T["market_custom"]],
+    horizontal=True,
+    label_visibility="collapsed"
+)
 
-with search_tab_my:
-    st.write(T["choose_stock"])
-    my_options = [f"{t} | {name}" for t, name in MY_STOCKS]
-    selected_my = st.selectbox("选择马股：", options=my_options, index=0, label_visibility="collapsed")
-    chosen_my_ticker = selected_my.split(" | ")[0].strip()
+if market_choice == T["market_my"]:
+    my_opts = [f"{t} | {name}" for t, name in MY_STOCKS]
+    # 找到默认索引
+    default_idx = 0
+    for idx, (t, _) in enumerate(MY_STOCKS):
+        if t == st.session_state["current_ticker"]:
+            default_idx = idx
+            break
+    sel_my = st.selectbox(T["choose_stock"], options=my_opts, index=default_idx)
+    st.session_state["current_ticker"] = sel_my.split(" | ")[0].strip()
 
-with search_tab_us:
-    st.write(T["choose_stock"])
-    us_options = [f"{t} | {name}" for t, name in US_STOCKS]
-    selected_us = st.selectbox("选择美股：", options=us_options, index=0, label_visibility="collapsed")
-    chosen_us_ticker = selected_us.split(" | ")[0].strip()
+elif market_choice == T["market_us"]:
+    us_opts = [f"{t} | {name}" for t, name in US_STOCKS]
+    default_idx = 0
+    for idx, (t, _) in enumerate(US_STOCKS):
+        if t == st.session_state["current_ticker"]:
+            default_idx = idx
+            break
+    sel_us = st.selectbox(T["choose_stock"], options=us_opts, index=default_idx)
+    st.session_state["current_ticker"] = sel_us.split(" | ")[0].strip()
 
-with search_tab_custom:
-    custom_in = st.text_input(
+else:
+    custom_val = st.text_input(
         T["custom_label"],
-        value="",
+        value=st.session_state["current_ticker"] if st.session_state["current_ticker"] not in [t for t, _ in MY_STOCKS + US_STOCKS] else "",
         placeholder=T["custom_placeholder"],
         help=T["custom_help"]
     ).strip().upper()
-
-# 决定当前激活的 Ticker
-active_tab_hint = "MY"
-if custom_in:
-    current_ticker = custom_in
-else:
-    # 依据用户最后交互的标签默认
-    # 使用会话状态或直接默认
-    current_ticker = chosen_my_ticker
+    if custom_val:
+        st.session_state["current_ticker"] = custom_val
 
 # 快捷一键切换按钮排
-st.write("🔥 **热门一键快速测评**：" if lang_key == "zh" else "🔥 **Quick Switch Suggestions**:")
+st.write(T["quick_tag"])
 q_cols = st.columns(6)
 if q_cols[0].button("1155.KL (Maybank)", use_container_width=True):
-    current_ticker = "1155.KL"
+    st.session_state["current_ticker"] = "1155.KL"
+    st.rerun()
 if q_cols[1].button("0166.KL (Inari 科技)", use_container_width=True):
-    current_ticker = "0166.KL"
+    st.session_state["current_ticker"] = "0166.KL"
+    st.rerun()
 if q_cols[2].button("5347.KL (Tenaga 能源)", use_container_width=True):
-    current_ticker = "5347.KL"
+    st.session_state["current_ticker"] = "5347.KL"
+    st.rerun()
 if q_cols[3].button("AAPL (苹果)", use_container_width=True):
-    current_ticker = "AAPL"
+    st.session_state["current_ticker"] = "AAPL"
+    st.rerun()
 if q_cols[4].button("NVDA (英伟达)", use_container_width=True):
-    current_ticker = "NVDA"
+    st.session_state["current_ticker"] = "NVDA"
+    st.rerun()
 if q_cols[5].button("TSLA (特斯拉)", use_container_width=True):
-    current_ticker = "TSLA"
+    st.session_state["current_ticker"] = "TSLA"
+    st.rerun()
+
+current_ticker = st.session_state["current_ticker"]
 
 st.markdown("---")
 
@@ -275,7 +310,7 @@ with st.expander(f"{T['param_header']} 👈 (小白用户建议直接保持默�
         ) / 100.0
 
 # ==============================================================================
-# 6. 后台轻量金融量化引擎
+# 6. 后台轻量金融量化引擎 (增强美股与马股数据容错)
 # ==============================================================================
 
 def fetch_risk_free_rate(is_my):
@@ -301,8 +336,13 @@ def run_dynamic_beta_regression(ticker, is_my):
             auto_adjust=True,
             progress=False
         )['Close']
+        
+        # 兼容 multi-index 列
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.get_level_values(0)
+
         returns = df.pct_change().dropna()
-        if len(returns) < 20:
+        if len(returns) < 20 or ticker not in returns.columns or benchmark_symbol not in returns.columns:
             return 1.0, None, 0.0
 
         y = returns[ticker].values * 100.0
@@ -331,126 +371,235 @@ def run_dynamic_beta_regression(ticker, is_my):
         return 1.0, None, 0.0
 
 # ==============================================================================
-# 7. 渲染执行与结果展示
+# 7. 核心执行与结果呈现
 # ==============================================================================
 if current_ticker:
     is_my = current_ticker.endswith(".KL")
 
-    with st.spinner(f"正在智能测算 {current_ticker} 的真实公道价值..." if lang_key == "zh" else f"Calculating fair intrinsic value for {current_ticker}..."):
+    with st.spinner(f"正在全维度测算 {current_ticker} 的真实公道价值..." if lang_key == "zh" else f"Calculating fair intrinsic valuation for {current_ticker}..."):
         try:
             stock = yf.Ticker(current_ticker)
-            info = stock.info
+            info = stock.info or {}
 
-            company_name = info.get('longName', current_ticker)
+            company_name = info.get('longName') or info.get('shortName') or current_ticker
             sector = info.get('sector', 'Unknown')
             industry = info.get('industry', 'Unknown')
             currency = info.get('currency', 'MYR' if is_my else 'USD')
-            price = info.get('currentPrice') or info.get('previousClose', 0.0)
+
+            # 稳健价格提取（解决部分美股 currentPrice 为空的问题）
+            price = (
+                info.get('currentPrice') 
+                or info.get('regularMarketPrice') 
+                or info.get('previousClose') 
+                or 0.0
+            )
+            if price == 0.0:
+                h_1d = stock.history(period="2d")
+                if not h_1d.empty and 'Close' in h_1d:
+                    price = float(h_1d['Close'].iloc[-1])
+
             shares = info.get('sharesOutstanding', 1) or 1
 
-            # 1. 无风险利率
+            # 1. 无风险利率与动态 Beta
             rf, rf_label = fetch_risk_free_rate(is_my)
-
-            # 2. 动态 Beta 散点拟合
             beta, beta_fig, beta_r2 = run_dynamic_beta_regression(current_ticker, is_my)
-
-            # 3. 股权成本 (CAPM Ke)
             ke = rf + (beta * custom_erp)
 
-            # 4. 判断估值模型
-            use_ddm = sector in ['Financial Services', 'Utilities', 'Real Estate']
+            # 2. 报表数据抓取（为 DCF / DDM / PE 准备）
+            bs = stock.balance_sheet
+            fin = stock.financials
+            cfs = stock.cashflow
 
-            intrinsic_val = None
-            growth_est = 0.05
-            wacc = ke
+            total_debt = 0.0
+            cash = 0.0
+            if bs is not None and not bs.empty:
+                total_debt = float(bs.loc['Total Debt'][0]) if 'Total Debt' in bs.index else 0.0
+                cash = float(bs.loc['Cash And Cash Equivalents'][0]) if 'Cash And Cash Equivalents' in bs.index else 0.0
 
-            # DCF 路径
-            if not use_ddm:
-                bs = stock.balance_sheet
-                fin = stock.financials
-                cf_sheet = stock.cashflow
+            interest_exp = 0.0
+            tax_rate = 0.24 if is_my else 0.21
+            if fin is not None and not fin.empty:
+                interest_exp = float(abs(fin.loc['Interest Expense'][0])) if 'Interest Expense' in fin.index else 0.0
+                tax = float(fin.loc['Tax Provision'][0]) if 'Tax Provision' in fin.index else 0.0
+                pretax = float(fin.loc['Pretax Income'][0]) if 'Pretax Income' in fin.index else 0.0
+                if pretax > 0 and tax > 0:
+                    tax_rate = min(max(tax / pretax, 0.10), 0.35)
 
-                total_debt = 0.0
-                cash = 0.0
-                if bs is not None and not bs.empty:
-                    total_debt = float(bs.loc['Total Debt'][0]) if 'Total Debt' in bs.index else 0.0
-                    cash = float(bs.loc['Cash And Cash Equivalents'][0]) if 'Cash And Cash Equivalents' in bs.index else 0.0
+            kd = (interest_exp / total_debt) if total_debt > 0 else 0.0
+            market_cap = price * shares
+            total_capital = market_cap + total_debt
+            wacc = (market_cap / total_capital * ke) + (total_debt / total_capital * kd * (1.0 - tax_rate)) if total_capital > 0 else ke
+            wacc = max(wacc, custom_terminal_g + 0.02)
 
-                interest_exp = 0.0
-                tax_rate = 0.24 if is_my else 0.21
-                if fin is not None and not fin.empty:
-                    interest_exp = float(abs(fin.loc['Interest Expense'][0])) if 'Interest Expense' in fin.index else 0.0
-                    tax = float(fin.loc['Tax Provision'][0]) if 'Tax Provision' in fin.index else 0.0
-                    pretax = float(fin.loc['Pretax Income'][0]) if 'Pretax Income' in fin.index else 0.0
-                    if pretax > 0 and tax > 0:
-                        tax_rate = min(max(tax / pretax, 0.10), 0.35)
+            # ------------------------------------------------------------------
+            # 模型一：两阶段现金流贴现模型 (Two-Stage DCF)
+            # ------------------------------------------------------------------
+            val_dcf = None
+            fcf = info.get('freeCashflow', 0.0) or 0.0
+            # 深度兜底 FCF
+            if fcf <= 0.0 and cfs is not None and not cfs.empty:
+                try:
+                    if 'Free Cash Flow' in cfs.index:
+                        fcf = float(cfs.loc['Free Cash Flow'][0])
+                    elif 'Operating Cash Flow' in cfs.index and 'Capital Expenditure' in cfs.index:
+                        fcf = float(cfs.loc['Operating Cash Flow'][0]) - abs(float(cfs.loc['Capital Expenditure'][0]))
+                except Exception:
+                    pass
 
-                kd = (interest_exp / total_debt) if total_debt > 0 else 0.0
-                market_cap = price * shares
-                total_capital = market_cap + total_debt
-                wacc = (market_cap / total_capital * ke) + (total_debt / total_capital * kd * (1.0 - tax_rate)) if total_capital > 0 else ke
-                wacc = max(wacc, custom_terminal_g + 0.02)
+            growth_dcf = 0.05
+            if fcf > 0.0:
+                if is_my:
+                    try:
+                        if cfs is not None and 'Free Cash Flow' in cfs.index and len(cfs.columns) >= 3:
+                            f_now = float(cfs.loc['Free Cash Flow'][0])
+                            f_past = float(cfs.loc['Free Cash Flow'][2])
+                            if f_now > 0 and f_past > 0:
+                                growth_dcf = (f_now / f_past) ** (1.0 / 2.0) - 1.0
+                    except Exception:
+                        pass
+                    growth_dcf = min(max(growth_dcf, 0.02), 0.15)
+                else:
+                    g_raw = info.get('earningsGrowth') or info.get('revenueGrowth') or 0.08
+                    growth_dcf = min(max(float(g_raw), 0.03), 0.20)
 
-                fcf = info.get('freeCashflow', 0.0) or 0.0
+                pv_stage1 = sum([ (fcf * ((1.0 + growth_dcf) ** yr)) / ((1.0 + wacc) ** yr) for yr in range(1, 6) ])
+                fcf_yr5 = fcf * ((1.0 + growth_dcf) ** 5)
+                pv_tv = ((fcf_yr5 * (1.0 + custom_terminal_g)) / (wacc - custom_terminal_g)) / ((1.0 + wacc) ** 5)
+                ev = pv_stage1 + pv_tv
+                equity_val = ev - total_debt + cash
+                val_dcf = equity_val / shares if shares > 0 else None
 
-                if fcf > 0.0:
-                    if is_my:
-                        try:
-                            if cf_sheet is not None and 'Free Cash Flow' in cf_sheet.index and len(cf_sheet.columns) >= 3:
-                                fcf_now = float(cf_sheet.loc['Free Cash Flow'][0])
-                                fcf_past = float(cf_sheet.loc['Free Cash Flow'][2])
-                                if fcf_now > 0 and fcf_past > 0:
-                                    growth_est = (fcf_now / fcf_past) ** (1.0 / 2.0) - 1.0
-                        except Exception:
-                            pass
-                        growth_est = min(max(growth_est, 0.02), 0.15)
-                    else:
-                        growth_raw = info.get('earningsGrowth') or info.get('revenueGrowth') or 0.08
-                        growth_est = min(max(float(growth_raw), 0.03), 0.20)
+            # ------------------------------------------------------------------
+            # 模型二：股息分红折现模型 (DDM)
+            # ------------------------------------------------------------------
+            val_ddm = None
+            dps = info.get('dividendRate') or info.get('trailingAnnualDividendRate') or 0.0
+            if dps > 0.0:
+                g_ddm = min(custom_terminal_g, ke - 0.01)
+                val_ddm = (dps * (1.0 + g_ddm)) / (ke - g_ddm) if ke > g_ddm else 0.0
 
-                    pv_stage1 = sum([ (fcf * ((1.0 + growth_est) ** yr)) / ((1.0 + wacc) ** yr) for yr in range(1, 6) ])
-                    fcf_yr5 = fcf * ((1.0 + growth_est) ** 5)
-                    pv_tv = ((fcf_yr5 * (1.0 + custom_terminal_g)) / (wacc - custom_terminal_g)) / ((1.0 + wacc) ** 5)
-                    ev = pv_stage1 + pv_tv
-                    equity_val = ev - total_debt + cash
-                    intrinsic_val = equity_val / shares
+            # ------------------------------------------------------------------
+            # 模型三：市盈率倍数估值法 (P/E Multiples)
+            # ------------------------------------------------------------------
+            val_pe = None
+            eps = info.get('trailingEps') or info.get('forwardEps') or 0.0
+            if eps <= 0.0 and fin is not None and not fin.empty:
+                try:
+                    if 'Net Income' in fin.index:
+                        net_inc = float(fin.loc['Net Income'][0])
+                        eps = net_inc / shares if shares > 0 else 0.0
+                except Exception:
+                    pass
 
-            # DDM 路径
+            if eps > 0.0:
+                # 行业基准市盈率锚定
+                if sector in ['Technology', 'Communication Services']:
+                    bench_pe = 24.0
+                elif sector in ['Financial Services']:
+                    bench_pe = 11.5
+                elif sector in ['Utilities', 'Real Estate']:
+                    bench_pe = 14.0
+                elif sector in ['Healthcare', 'Consumer Defensive']:
+                    bench_pe = 18.0
+                else:
+                    bench_pe = 16.0
+                val_pe = eps * bench_pe
+
+            # ------------------------------------------------------------------
+            # 确定系统最推荐模型 (Recommendation Decision)
+            # ------------------------------------------------------------------
+            if sector in ['Financial Services', 'Utilities', 'Real Estate'] and val_ddm is not None:
+                primary_model_name = T["model_ddm_name"]
+                primary_val = val_ddm
+                rec_reason = "高杠杆/稳定分红商业模式，以持续派息能力为主" if lang_key == "zh" else "High-dividend/regulated financial structure"
+            elif val_dcf is not None:
+                primary_model_name = T["model_dcf_name"]
+                primary_val = val_dcf
+                rec_reason = "实体经营自主造血能力最客观真实" if lang_key == "zh" else "Most authentic reflection of operating cash generation"
+            elif val_pe is not None:
+                primary_model_name = T["model_pe_name"]
+                primary_val = val_pe
+                rec_reason = "现金流处于重投资期，采用市盈率盈利倍数衡量" if lang_key == "zh" else "Reinvestment phase, evaluated via P/E multiple"
             else:
-                dps = info.get('dividendRate') or info.get('trailingAnnualDividendRate') or 0.0
-                if dps > 0.0:
-                    g_ddm = min(custom_terminal_g, ke - 0.01)
-                    intrinsic_val = (dps * (1.0 + g_ddm)) / (ke - g_ddm) if ke > g_ddm else 0.0
-                    growth_est = g_ddm
+                primary_model_name = "N/A"
+                primary_val = None
+                rec_reason = "暂无充足盈利数据" if lang_key == "zh" else "Insufficient earnings data"
 
             # ==================================================================
-            # 结果呈现区 (醒目大卡片，通俗易懂)
+            # 结果呈现区 (步骤 3)
             # ==================================================================
             st.subheader(T["result_header"])
-            st.markdown(f"#### 🏢 **{company_name}** (`{current_ticker}`) | {sector} | {industry}")
+            st.markdown(f"#### 🏢 **{company_name}** (`{current_ticker}`) | `{sector}` | `{industry}` | `{currency}`")
 
-            res_card1, res_card2, res_card3 = st.columns([1, 1, 1.4])
-            
-            with res_card1:
-                st.metric(label=T["curr_price"], value=f"{currency} {price:.2f}")
+            # 顶部最推荐结论大卡片
+            top_col1, top_col2, top_col3 = st.columns([1, 1.2, 1.4])
+            with top_col1:
+                st.metric(label=T["curr_price"], value=f"{currency} {price:.2f}" if price > 0 else "N/A")
 
-            with res_card2:
-                if intrinsic_val and intrinsic_val > 0:
-                    st.metric(label=T["fair_price"], value=f"{currency} {intrinsic_val:.2f}")
+            with top_col2:
+                if primary_val and primary_val > 0:
+                    st.metric(
+                        label=f"{T['fair_price_rec']} ({primary_model_name})", 
+                        value=f"{currency} {primary_val:.2f}",
+                        help=rec_reason
+                    )
                 else:
-                    st.metric(label=T["fair_price"], value="N/A (现金流为负)")
+                    st.metric(label=T["fair_price_rec"], value=T["no_data"])
 
-            with res_card3:
-                if intrinsic_val and intrinsic_val > 0 and price > 0:
-                    diff_pct = (intrinsic_val - price) / price * 100.0
-                    if intrinsic_val > price:
+            with top_col3:
+                if primary_val and primary_val > 0 and price > 0:
+                    diff_pct = (primary_val - price) / price * 100.0
+                    if primary_val > price:
                         st.success(f"### {T['verdict_under']}\n**{T['upside_prefix']} +{diff_pct:.1f}%**")
                     else:
                         st.error(f"### {T['verdict_over']}\n**{T['downside_prefix']} {abs(diff_pct):.1f}%**")
                 else:
-                    st.warning("⚠️ 该公司自由现金流为负数或无分红，无法通过传统量化折现计算公允价格。")
+                    st.warning(T["no_data"])
 
-            st.caption(f"ℹ️ {T['model_used_ddm'] if use_ddm else T['model_used_dcf']}")
+            st.markdown("---")
+
+            # 三大模型横向对比矩阵 (DCF + DDM + P/E)
+            st.markdown("#### ⚖️ 三大经典估值模型横向横比 (Valuation Matrix)")
+            m_col1, m_col2, m_col3 = st.columns(3)
+
+            # 模型 1: DCF
+            with m_col1:
+                is_rec = (primary_model_name == T["model_dcf_name"])
+                badge = f"`{T['badge_recommended']}`" if is_rec else f"`{T['badge_reference']}`"
+                st.markdown(f"##### {T['model_dcf_name']} {badge}")
+                if val_dcf and val_dcf > 0:
+                    dcf_diff = (val_dcf - price) / price * 100.0 if price > 0 else 0
+                    st.metric("公道估值", f"{currency} {val_dcf:.2f}", f"{dcf_diff:+.1f}% vs 市价")
+                    st.caption("基于未来 5 年公司自由现金流与 WACC 折现。")
+                else:
+                    st.metric("公道估值", "N/A")
+                    st.caption(f"⚠️ {T['no_data_dcf']}")
+
+            # 模型 2: DDM
+            with m_col2:
+                is_rec = (primary_model_name == T["model_ddm_name"])
+                badge = f"`{T['badge_recommended']}`" if is_rec else f"`{T['badge_reference']}`"
+                st.markdown(f"##### {T['model_ddm_name']} {badge}")
+                if val_ddm and val_ddm > 0:
+                    ddm_diff = (val_ddm - price) / price * 100.0 if price > 0 else 0
+                    st.metric("公道估值", f"{currency} {val_ddm:.2f}", f"{ddm_diff:+.1f}% vs 市价")
+                    st.caption("基于历史股息分红及永续增长率折现。")
+                else:
+                    st.metric("公道估值", "N/A")
+                    st.caption(f"⚠️ {T['no_data_ddm']}")
+
+            # 模型 3: P/E
+            with m_col3:
+                is_rec = (primary_model_name == T["model_pe_name"])
+                badge = f"`{T['badge_recommended']}`" if is_rec else f"`{T['badge_reference']}`"
+                st.markdown(f"##### {T['model_pe_name']} {badge}")
+                if val_pe and val_pe > 0:
+                    pe_diff = (val_pe - price) / price * 100.0 if price > 0 else 0
+                    st.metric("公道估值", f"{currency} {val_pe:.2f}", f"{pe_diff:+.1f}% vs 市价")
+                    st.caption("基于每股净收益 (EPS) 乘以行业合理市盈率倍数。")
+                else:
+                    st.metric("公道估值", "N/A")
+                    st.caption(f"⚠️ {T['no_data_pe']}")
 
             st.markdown("---")
 
@@ -467,7 +616,7 @@ if current_ticker:
 
             with g_col2:
                 st.markdown(f"##### {T['card_growth_title']}")
-                st.metric(f"Growth (5Y)", f"{growth_est * 100:.1f}%")
+                st.metric(f"Growth (5Y)", f"{growth_dcf * 100:.1f}%")
                 st.info(T["card_growth_desc"])
 
             with g_col3:
@@ -477,38 +626,56 @@ if current_ticker:
 
             with g_col4:
                 st.markdown(f"##### {T['card_fair_title']}")
-                st.metric("Fair Value", f"{currency} {intrinsic_val:.2f}" if intrinsic_val else "N/A")
+                st.metric("Fair Value", f"{currency} {primary_val:.2f}" if primary_val else "N/A")
                 st.info(T["card_fair_desc"])
 
             st.markdown("---")
 
             # ==================================================================
-            # 视觉图表区域 (直接并在主页面上，左边 Beta 散点图，右边 5 年股价走势)
+            # 视觉图表区域 (步骤 4：包含多周期动态走势图 1D, 1M, 1Y, 5Y, MAX)
             # ==================================================================
             st.subheader(T["chart_header"])
-            ch_col1, ch_col2 = st.columns([1, 1.2])
+            ch_col1, ch_col2 = st.columns([1.3, 1])
 
             with ch_col1:
+                st.markdown(f"##### 📈 {T['chart_history_title']}")
+                
+                # 动态周期选择器
+                timeframe = st.radio(
+                    T["timeframe_label"],
+                    options=["1D (1天)", "1M (1个月)", "1Y (1年)", "5Y (5年)", "MAX (全部)"],
+                    index=3,
+                    horizontal=True
+                )
+                
+                # 周期映射
+                tf_map = {
+                    "1D (1天)": ("1d", "5m"),
+                    "1M (1个月)": ("1mo", "1d"),
+                    "1Y (1年)": ("1y", "1d"),
+                    "5Y (5年)": ("5y", "1wk"),
+                    "MAX (全部)": ("max", "1mo")
+                }
+                period_val, interval_val = tf_map[timeframe]
+
+                hist_data = yf.download(
+                    current_ticker,
+                    period=period_val,
+                    interval=interval_val,
+                    progress=False
+                )
+                if not hist_data.empty and 'Close' in hist_data:
+                    st.line_chart(hist_data['Close'], use_container_width=True)
+                else:
+                    st.write("暂无该周期的走势数据")
+
+            with ch_col2:
                 st.markdown(f"##### 🎯 {T['chart_beta_title']}")
                 st.caption(T["chart_beta_exp"])
                 if beta_fig is not None:
                     st.pyplot(beta_fig)
                 else:
                     st.write("暂无散点图数据")
-
-            with ch_col2:
-                st.markdown(f"##### 📈 {T['chart_history_title']}")
-                end_dt = datetime.datetime.now()
-                hist_data = yf.download(
-                    current_ticker,
-                    start=end_dt - datetime.timedelta(days=1825),
-                    end=end_dt,
-                    progress=False
-                )
-                if not hist_data.empty and 'Close' in hist_data:
-                    st.line_chart(hist_data['Close'])
-                else:
-                    st.write("暂无历史走势数据")
 
             # ==================================================================
             # 美股专属：华尔街一致预期
@@ -528,7 +695,7 @@ if current_ticker:
                     ws2.metric(T["ws_range"], f"${target_low:.2f} ~ ${target_high:.2f}")
                     ws3.metric(T["ws_rating"], rating)
 
-                    if intrinsic_val and abs((intrinsic_val - target_mean) / target_mean) <= 0.15:
+                    if primary_val and abs((primary_val - target_mean) / target_mean) <= 0.15:
                         st.success(T["ws_match"])
 
             # ==================================================================
