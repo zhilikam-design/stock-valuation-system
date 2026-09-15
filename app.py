@@ -7,6 +7,12 @@ import datetime
 import urllib.request
 import json
 
+try:
+    import plotly.graph_objects as go
+    HAS_PLOTLY = True
+except ImportError:
+    HAS_PLOTLY = False
+
 # ==============================================================================
 # 1. 页面基本配置
 # ==============================================================================
@@ -78,9 +84,10 @@ TEXTS = {
         "card_fair_desc": "剥离市场的短期情绪狂热与恐慌，根据公司真实资产、欠债与赚钱能力算出的'出厂公道价'。",
 
         # 动态图表
-        "chart_header": "📈 步骤 4：多周期走势图与量化特征图",
-        "timeframe_label": "切换股价走势周期：",
-        "chart_history_title": "股票价格动态走势图",
+        "chart_header": "📈 步骤 4：多周期蜡烛走势图与量化特征图",
+        "timeframe_label": "切换 K 线蜡烛图周期：",
+        "chart_history_title": "股价动态 K 线蜡烛走势图 (Candlestick)",
+        "chart_legend": "🟢 绿色表示收盘上涨 (阳线) | 🔴 红色表示收盘下跌 (阴线)",
         "chart_beta_title": "Beta 收益率特征线散点分布图",
         "chart_beta_exp": "每个点代表过往某一周的收益率联动。红线斜率即为真实 Beta（马股对标 MSCI Malaysia ETF，美股对标 S&P 500）。",
         
@@ -156,9 +163,10 @@ TEXTS = {
         "card_fair_desc": "Stripping away short-term market hype and panic, this represents the company's authentic 'factory price' per share.",
 
         # Dynamic Charts
-        "chart_header": "📈 Step 4: Multi-Timeframe Price Trend & Regression Analysis",
-        "timeframe_label": "Select Price Timeframe:",
-        "chart_history_title": "Interactive Stock Price Trend",
+        "chart_header": "📈 Step 4: Multi-Timeframe Candlestick & Regression Analysis",
+        "timeframe_label": "Select Candlestick Timeframe:",
+        "chart_history_title": "Interactive Stock Candlestick Chart",
+        "chart_legend": "🟢 Green: Closed Higher (Bullish) | 🔴 Red: Closed Lower (Bearish)",
         "chart_beta_title": "Beta Characteristic Line & Scatter Plot",
         "chart_beta_exp": "Each point represents one week of historical returns. The slope of the red line is Beta (vs MSCI Malaysia ETF for Bursa, vs S&P 500 for US).",
         
@@ -762,16 +770,16 @@ if current_ticker:
                 timeframe = st.radio(
                     T["timeframe_label"],
                     options=["1D (1天)", "1M (1个月)", "1Y (1年)", "5Y (5年)", "MAX (全部)"],
-                    index=3,
+                    index=2,
                     horizontal=True
                 )
                 
                 tf_map = {
                     "1D (1天)": ("1d", "5m"),
                     "1M (1个月)": ("1mo", "1d"),
-                    "1Y (1年)": ("1y", "1d"),
-                    "5Y (5年)": ("5y", "1wk"),
-                    "MAX (全部)": ("max", "1mo")
+                    "1Y (1年)": ("1y", "1wk"),
+                    "5Y (5年)": ("5y", "1mo"),
+                    "MAX (全部)": ("max", "3mo")
                 }
                 period_val, interval_val = tf_map[timeframe]
 
@@ -782,12 +790,69 @@ if current_ticker:
                         interval=interval_val,
                         progress=False
                     )
-                    if not hist_data.empty and 'Close' in hist_data:
-                        st.line_chart(hist_data['Close'], use_container_width=True)
+                    if isinstance(hist_data.columns, pd.MultiIndex):
+                        hist_data.columns = hist_data.columns.get_level_values(0)
+
+                    req_cols = ['Open', 'High', 'Low', 'Close']
+                    if not hist_data.empty and all(c in hist_data.columns for c in req_cols):
+                        hist_data = hist_data.dropna(subset=req_cols)
+                        if period_val == "1d":
+                            x_labels = [d.strftime('%H:%M') for d in hist_data.index]
+                        elif period_val in ["1mo", "1y"]:
+                            x_labels = [d.strftime('%Y-%m-%d') for d in hist_data.index]
+                        else:
+                            x_labels = [d.strftime('%Y-%m') for d in hist_data.index]
+
+                        if HAS_PLOTLY:
+                            fig_k = go.Figure(data=[go.Candlestick(
+                                x=x_labels,
+                                open=hist_data['Open'],
+                                high=hist_data['High'],
+                                low=hist_data['Low'],
+                                close=hist_data['Close'],
+                                increasing_line_color='#26a69a',
+                                decreasing_line_color='#ef5350',
+                                increasing_fillcolor='#26a69a',
+                                decreasing_fillcolor='#ef5350',
+                                name=current_ticker
+                            )])
+                            fig_k.update_layout(
+                                xaxis_rangeslider_visible=False,
+                                height=380,
+                                margin=dict(l=10, r=10, t=15, b=10),
+                                template="plotly_white",
+                                xaxis=dict(showgrid=True, gridcolor="#f0f0f0", type="category"),
+                                yaxis=dict(showgrid=True, gridcolor="#f0f0f0", title=f"Price ({currency})")
+                            )
+                            st.plotly_chart(fig_k, use_container_width=True)
+                        else:
+                            fig_k, ax = plt.subplots(figsize=(6, 3.8), dpi=110)
+                            opens = hist_data['Open'].values
+                            highs = hist_data['High'].values
+                            lows = hist_data['Low'].values
+                            closes = hist_data['Close'].values
+                            x_pos = np.arange(len(closes))
+                            for i in range(len(closes)):
+                                col = '#26a69a' if closes[i] >= opens[i] else '#ef5350'
+                                ax.vlines(x_pos[i], lows[i], highs[i], color=col, linewidth=0.8)
+                                ax.vlines(x_pos[i], opens[i], closes[i], color=col, linewidth=3.0)
+
+                            num_ticks = min(6, len(x_labels))
+                            if num_ticks > 0:
+                                tick_idx = np.linspace(0, len(x_labels) - 1, num_ticks, dtype=int)
+                                ax.set_xticks(tick_idx)
+                                ax.set_xticklabels([x_labels[k] for k in tick_idx], rotation=25, fontsize=8)
+
+                            ax.grid(True, linestyle=":", alpha=0.4)
+                            ax.set_ylabel(f"Price ({currency})", fontsize=9)
+                            plt.tight_layout()
+                            st.pyplot(fig_k)
+
+                        st.caption(f"💡 {T['chart_legend']}")
                     else:
-                        st.write("暂无该周期的走势数据")
-                except Exception:
-                    st.write("获取该周期走势数据失败")
+                        st.write("暂无该周期的完整 K 线数据")
+                except Exception as ex:
+                    st.write(f"获取该周期走势数据失败: {ex}")
 
             with ch_col2:
                 st.markdown(f"##### 🎯 {T['chart_beta_title']}")
