@@ -217,7 +217,6 @@ US_STOCKS = [
     ("JPM", "JPMorgan Chase (摩根大通 - 华尔街银行巨头)")
 ]
 
-# 初始化 session_state
 if "current_ticker" not in st.session_state:
     st.session_state["current_ticker"] = "1155.KL"
 
@@ -230,7 +229,6 @@ market_choice = st.radio(
 
 if market_choice == T["market_my"]:
     my_opts = [f"{t} | {name}" for t, name in MY_STOCKS]
-    # 找到默认索引
     default_idx = 0
     for idx, (t, _) in enumerate(MY_STOCKS):
         if t == st.session_state["current_ticker"]:
@@ -286,7 +284,7 @@ current_ticker = st.session_state["current_ticker"]
 st.markdown("---")
 
 # ==============================================================================
-# 5. 核心参数调节 (直接展示在主界面，附带小白提示)
+# 5. 核心参数调节
 # ==============================================================================
 with st.expander(f"{T['param_header']} 👈 (小白用户建议直接保持默认，无需改动)", expanded=False):
     param_col1, param_col2 = st.columns(2)
@@ -310,17 +308,41 @@ with st.expander(f"{T['param_header']} 👈 (小白用户建议直接保持默�
         ) / 100.0
 
 # ==============================================================================
-# 6. 后台轻量金融量化引擎 (增强美股与马股数据容错)
+# 6. 后台轻量金融量化引擎 (极度健壮，杜绝任何 KeyError: 0)
 # ==============================================================================
+
+def safe_extract_item(df, item_name, default=0.0):
+    """
+    安全提取财务报表中指标最新一期数据（完全杜绝 Pandas KeyError: 0）
+    """
+    if df is None or df.empty:
+        return default
+    try:
+        for idx in df.index:
+            if str(idx).strip().lower() == str(item_name).strip().lower():
+                row = df.loc[idx]
+                if hasattr(row, 'iloc') and len(row) > 0:
+                    val = row.iloc[0]
+                elif hasattr(row, '__iter__') and len(row) > 0:
+                    val = list(row)[0]
+                else:
+                    val = row
+                if pd.notna(val):
+                    return float(val)
+    except Exception:
+        pass
+    return default
 
 def fetch_risk_free_rate(is_my):
     if is_my:
         return 0.0385, "BNM 官方动态基准 (MGS 10Y: ~3.85%)"
     try:
-        tnx = yf.Ticker("^TNX").history(period="1d")
-        if len(tnx) > 0 and 'Close' in tnx:
-            rf = float(tnx['Close'].iloc[-1]) / 100.0
-            return rf, f"US Treasury 10Y (^TNX: {rf*100:.2f}%)"
+        tnx = yf.Ticker("^TNX").history(period="5d")
+        if not tnx.empty and 'Close' in tnx:
+            valid_closes = tnx['Close'].dropna()
+            if len(valid_closes) > 0:
+                rf = float(valid_closes.iloc[-1]) / 100.0
+                return rf, f"US Treasury 10Y (^TNX: {rf*100:.2f}%)"
         return 0.042, "US Treasury 10Y Benchmark (4.20%)"
     except Exception:
         return 0.042, "US Treasury 10Y Benchmark (4.20%)"
@@ -335,21 +357,34 @@ def run_dynamic_beta_regression(ticker, is_my):
             interval="1wk",
             auto_adjust=True,
             progress=False
-        )['Close']
-        
-        # 兼容 multi-index 列
-        if isinstance(df.columns, pd.MultiIndex):
-            df.columns = df.columns.get_level_values(0)
-
-        returns = df.pct_change().dropna()
-        if len(returns) < 20 or ticker not in returns.columns or benchmark_symbol not in returns.columns:
+        )
+        if df.empty:
             return 1.0, None, 0.0
 
-        y = returns[ticker].values * 100.0
-        x = returns[benchmark_symbol].values * 100.0
+        if 'Close' in df:
+            df_close = df['Close']
+        else:
+            df_close = df
+
+        if isinstance(df_close.columns, pd.MultiIndex):
+            df_close.columns = df_close.columns.get_level_values(0)
+
+        df_close.columns = [str(c).strip().upper() for c in df_close.columns]
+        target_t = ticker.strip().upper()
+        target_b = benchmark_symbol.strip().upper()
+
+        if target_t not in df_close.columns or target_b not in df_close.columns:
+            return 1.0, None, 0.0
+
+        returns = df_close[[target_t, target_b]].pct_change().dropna()
+        if len(returns) < 20:
+            return 1.0, None, 0.0
+
+        y = returns[target_t].values * 100.0
+        x = returns[target_b].values * 100.0
         beta, alpha = np.polyfit(x, y, 1)
         corr = np.corrcoef(x, y)[0, 1]
-        r2 = float(corr ** 2)
+        r2 = float(corr ** 2) if pd.notna(corr) else 0.0
 
         # 绘制散点图
         fig, ax = plt.subplots(figsize=(5.5, 3.8), dpi=110)
@@ -386,7 +421,7 @@ if current_ticker:
             industry = info.get('industry', 'Unknown')
             currency = info.get('currency', 'MYR' if is_my else 'USD')
 
-            # 稳健价格提取（解决部分美股 currentPrice 为空的问题）
+            # 稳健价格提取
             price = (
                 info.get('currentPrice') 
                 or info.get('regularMarketPrice') 
@@ -394,9 +429,14 @@ if current_ticker:
                 or 0.0
             )
             if price == 0.0:
-                h_1d = stock.history(period="2d")
-                if not h_1d.empty and 'Close' in h_1d:
-                    price = float(h_1d['Close'].iloc[-1])
+                try:
+                    h_2d = stock.history(period="5d")
+                    if not h_2d.empty and 'Close' in h_2d:
+                        valid_closes = h_2d['Close'].dropna()
+                        if len(valid_closes) > 0:
+                            price = float(valid_closes.iloc[-1])
+                except Exception:
+                    pass
 
             shares = info.get('sharesOutstanding', 1) or 1
 
@@ -405,25 +445,28 @@ if current_ticker:
             beta, beta_fig, beta_r2 = run_dynamic_beta_regression(current_ticker, is_my)
             ke = rf + (beta * custom_erp)
 
-            # 2. 报表数据抓取（为 DCF / DDM / PE 准备）
+            # 2. 安全读取报表数据
             bs = stock.balance_sheet
             fin = stock.financials
             cfs = stock.cashflow
 
-            total_debt = 0.0
-            cash = 0.0
-            if bs is not None and not bs.empty:
-                total_debt = float(bs.loc['Total Debt'][0]) if 'Total Debt' in bs.index else 0.0
-                cash = float(bs.loc['Cash And Cash Equivalents'][0]) if 'Cash And Cash Equivalents' in bs.index else 0.0
+            total_debt = safe_extract_item(bs, 'Total Debt', 0.0)
+            if total_debt == 0.0:
+                total_debt = float(info.get('totalDebt', 0.0) or 0.0)
 
-            interest_exp = 0.0
+            cash = safe_extract_item(bs, 'Cash And Cash Equivalents', 0.0)
+            if cash == 0.0:
+                cash = safe_extract_item(bs, 'Cash Cash Equivalents And Short Term Investments', 0.0)
+            if cash == 0.0:
+                cash = float(info.get('totalCash', 0.0) or 0.0)
+
+            interest_exp = abs(safe_extract_item(fin, 'Interest Expense', 0.0))
+            tax = safe_extract_item(fin, 'Tax Provision', 0.0)
+            pretax = safe_extract_item(fin, 'Pretax Income', 0.0)
+
             tax_rate = 0.24 if is_my else 0.21
-            if fin is not None and not fin.empty:
-                interest_exp = float(abs(fin.loc['Interest Expense'][0])) if 'Interest Expense' in fin.index else 0.0
-                tax = float(fin.loc['Tax Provision'][0]) if 'Tax Provision' in fin.index else 0.0
-                pretax = float(fin.loc['Pretax Income'][0]) if 'Pretax Income' in fin.index else 0.0
-                if pretax > 0 and tax > 0:
-                    tax_rate = min(max(tax / pretax, 0.10), 0.35)
+            if pretax > 0 and tax > 0:
+                tax_rate = min(max(tax / pretax, 0.10), 0.35)
 
             kd = (interest_exp / total_debt) if total_debt > 0 else 0.0
             market_cap = price * shares
@@ -435,32 +478,38 @@ if current_ticker:
             # 模型一：两阶段现金流贴现模型 (Two-Stage DCF)
             # ------------------------------------------------------------------
             val_dcf = None
-            fcf = info.get('freeCashflow', 0.0) or 0.0
-            # 深度兜底 FCF
-            if fcf <= 0.0 and cfs is not None and not cfs.empty:
-                try:
-                    if 'Free Cash Flow' in cfs.index:
-                        fcf = float(cfs.loc['Free Cash Flow'][0])
-                    elif 'Operating Cash Flow' in cfs.index and 'Capital Expenditure' in cfs.index:
-                        fcf = float(cfs.loc['Operating Cash Flow'][0]) - abs(float(cfs.loc['Capital Expenditure'][0]))
-                except Exception:
-                    pass
+            fcf = float(info.get('freeCashflow', 0.0) or 0.0)
+            if fcf <= 0.0:
+                fcf = safe_extract_item(cfs, 'Free Cash Flow', 0.0)
+            if fcf <= 0.0:
+                ocf = safe_extract_item(cfs, 'Operating Cash Flow', 0.0)
+                capex = abs(safe_extract_item(cfs, 'Capital Expenditure', 0.0))
+                if ocf > capex:
+                    fcf = ocf - capex
 
             growth_dcf = 0.05
             if fcf > 0.0:
                 if is_my:
                     try:
-                        if cfs is not None and 'Free Cash Flow' in cfs.index and len(cfs.columns) >= 3:
-                            f_now = float(cfs.loc['Free Cash Flow'][0])
-                            f_past = float(cfs.loc['Free Cash Flow'][2])
-                            if f_now > 0 and f_past > 0:
-                                growth_dcf = (f_now / f_past) ** (1.0 / 2.0) - 1.0
+                        if cfs is not None and not cfs.empty:
+                            for idx in cfs.index:
+                                if 'free cash flow' in str(idx).lower():
+                                    row = cfs.loc[idx]
+                                    if hasattr(row, 'iloc') and len(row) >= 3:
+                                        f_now = float(row.iloc[0])
+                                        f_past = float(row.iloc[2])
+                                        if f_now > 0 and f_past > 0:
+                                            growth_dcf = (f_now / f_past) ** 0.5 - 1.0
+                                        break
                     except Exception:
                         pass
                     growth_dcf = min(max(growth_dcf, 0.02), 0.15)
                 else:
                     g_raw = info.get('earningsGrowth') or info.get('revenueGrowth') or 0.08
-                    growth_dcf = min(max(float(g_raw), 0.03), 0.20)
+                    try:
+                        growth_dcf = min(max(float(g_raw), 0.03), 0.20)
+                    except Exception:
+                        growth_dcf = 0.08
 
                 pv_stage1 = sum([ (fcf * ((1.0 + growth_dcf) ** yr)) / ((1.0 + wacc) ** yr) for yr in range(1, 6) ])
                 fcf_yr5 = fcf * ((1.0 + growth_dcf) ** 5)
@@ -473,7 +522,7 @@ if current_ticker:
             # 模型二：股息分红折现模型 (DDM)
             # ------------------------------------------------------------------
             val_ddm = None
-            dps = info.get('dividendRate') or info.get('trailingAnnualDividendRate') or 0.0
+            dps = float(info.get('dividendRate') or info.get('trailingAnnualDividendRate') or 0.0)
             if dps > 0.0:
                 g_ddm = min(custom_terminal_g, ke - 0.01)
                 val_ddm = (dps * (1.0 + g_ddm)) / (ke - g_ddm) if ke > g_ddm else 0.0
@@ -482,17 +531,13 @@ if current_ticker:
             # 模型三：市盈率倍数估值法 (P/E Multiples)
             # ------------------------------------------------------------------
             val_pe = None
-            eps = info.get('trailingEps') or info.get('forwardEps') or 0.0
-            if eps <= 0.0 and fin is not None and not fin.empty:
-                try:
-                    if 'Net Income' in fin.index:
-                        net_inc = float(fin.loc['Net Income'][0])
-                        eps = net_inc / shares if shares > 0 else 0.0
-                except Exception:
-                    pass
+            eps = float(info.get('trailingEps') or info.get('forwardEps') or 0.0)
+            if eps <= 0.0:
+                net_inc = safe_extract_item(fin, 'Net Income', 0.0)
+                if net_inc > 0 and shares > 0:
+                    eps = net_inc / shares
 
             if eps > 0.0:
-                # 行业基准市盈率锚定
                 if sector in ['Technology', 'Communication Services']:
                     bench_pe = 24.0
                 elif sector in ['Financial Services']:
@@ -640,7 +685,6 @@ if current_ticker:
             with ch_col1:
                 st.markdown(f"##### 📈 {T['chart_history_title']}")
                 
-                # 动态周期选择器
                 timeframe = st.radio(
                     T["timeframe_label"],
                     options=["1D (1天)", "1M (1个月)", "1Y (1年)", "5Y (5年)", "MAX (全部)"],
@@ -648,7 +692,6 @@ if current_ticker:
                     horizontal=True
                 )
                 
-                # 周期映射
                 tf_map = {
                     "1D (1天)": ("1d", "5m"),
                     "1M (1个月)": ("1mo", "1d"),
@@ -658,16 +701,19 @@ if current_ticker:
                 }
                 period_val, interval_val = tf_map[timeframe]
 
-                hist_data = yf.download(
-                    current_ticker,
-                    period=period_val,
-                    interval=interval_val,
-                    progress=False
-                )
-                if not hist_data.empty and 'Close' in hist_data:
-                    st.line_chart(hist_data['Close'], use_container_width=True)
-                else:
-                    st.write("暂无该周期的走势数据")
+                try:
+                    hist_data = yf.download(
+                        current_ticker,
+                        period=period_val,
+                        interval=interval_val,
+                        progress=False
+                    )
+                    if not hist_data.empty and 'Close' in hist_data:
+                        st.line_chart(hist_data['Close'], use_container_width=True)
+                    else:
+                        st.write("暂无该周期的走势数据")
+                except Exception:
+                    st.write("获取该周期走势数据失败")
 
             with ch_col2:
                 st.markdown(f"##### 🎯 {T['chart_beta_title']}")
@@ -705,4 +751,4 @@ if current_ticker:
             st.warning(f"### {T['disclaimer_title']}\n\n{T['disclaimer_content']}")
 
         except Exception as e:
-            st.error(f"测算失败: 找不到该股票代码或网络异常。请检查代码是否正确（例如马股加 .KL）。错误信息: {e}")
+            st.error(f"测算遇到异常，请检查代码或重试。错误详情: {e}")
